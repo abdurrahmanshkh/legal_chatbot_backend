@@ -8,8 +8,9 @@ from langchain_community.vectorstores import FAISS
 from langchain_core.prompts import PromptTemplate
 import google.generativeai as genai
 from langchain_openai import ChatOpenAI
-from langchain.chains.retrieval import create_retrieval_chain
-from langchain.chains.combine_documents import create_stuff_documents_chain
+from langchain.chains import create_retrieval_chain
+from langchain.chains.combine_documents.stuff import create_stuff_documents_chain
+
 
 # Load environment variables
 load_dotenv()

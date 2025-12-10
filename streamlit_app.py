@@ -3,13 +3,17 @@ import streamlit as st
 from dotenv import load_dotenv
 
 # LangChain and AI imports
+# Updated imports for stability
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_core.prompts import PromptTemplate
 import google.generativeai as genai
 from langchain_openai import ChatOpenAI
+
+# CORRECTED IMPORTS HERE:
+# We import directly from the submodules to avoid namespace conflicts
 from langchain.chains.retrieval import create_retrieval_chain
-from langchain.chains.combine_documents.stuff import create_stuff_documents_chain
+from langchain.chains.combine_documents import create_stuff_documents_chain
 
 # Load environment variables
 load_dotenv()

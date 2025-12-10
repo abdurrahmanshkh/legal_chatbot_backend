@@ -8,8 +8,9 @@ from langchain_community.vectorstores import FAISS
 from langchain_core.prompts import PromptTemplate
 import google.generativeai as genai
 from langchain_openai import ChatOpenAI
-from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents.stuff import create_stuff_documents_chain
+from langchain_core.runnables import RunnablePassthrough
+from langchain_core.output_parsers import StrOutputParser
 
 
 # Load environment variables
@@ -300,17 +301,24 @@ if genai_key:
 else:
     gemini_model = None
 
+# Remove the import for create_stuff_documents_chain (line 10) as it's no longer needed
 
+# Updated chain creation (inline for simplicity; no separate function)
 @st.cache_resource
 def init_openai_chain():
     key = os.getenv("OPENAI_API_KEY")
     if not key:
         return None
-    llm = ChatOpenAI(model_name="gpt-4o-mini",
-                     temperature=0.3, openai_api_key=key)
-    chain = create_stuff_documents_chain(llm, prompt)
-    return create_retrieval_chain(retriever, chain)
-
+    llm = ChatOpenAI(model_name="gpt-4o-mini", temperature=0.3, openai_api_key=key)
+    
+    # LCEL chain: Retrieves docs, formats prompt, calls LLM, parses output
+    chain = (
+        {"context": retriever, "input": RunnablePassthrough()}
+        | prompt
+        | llm
+        | StrOutputParser()
+    )
+    return chain
 
 openai_chain = init_openai_chain()
 
@@ -334,7 +342,7 @@ def get_response(user_query):
         if not openai_chain:
             return "Error: OPENAI_API_KEY not set."
         result = openai_chain.invoke({"input": user_query})
-        return result.get("answer", "I do not have enough information to answer that.")
+        return result or "I do not have enough information to answer that."
 
 
 # Chat container

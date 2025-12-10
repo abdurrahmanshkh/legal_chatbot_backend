@@ -8,7 +8,7 @@ from langchain_community.vectorstores import FAISS
 from langchain_core.prompts import PromptTemplate
 import google.generativeai as genai
 from langchain_openai import ChatOpenAI
-from langchain.chains import create_retrieval_chain
+from langchain.chains.retrieval import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 
 # Load environment variables
@@ -305,10 +305,11 @@ def init_openai_chain():
     key = os.getenv("OPENAI_API_KEY")
     if not key:
         return None
-    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.3, api_key=key)
-    
-    combine_docs_chain = create_stuff_documents_chain(llm, prompt)
-    return create_retrieval_chain(retriever, combine_docs_chain)
+    llm = ChatOpenAI(model_name="gpt-4o-mini",
+                     temperature=0.3, openai_api_key=key)
+    chain = create_stuff_documents_chain(llm, prompt)
+    return create_retrieval_chain(retriever, chain)
+
 
 openai_chain = init_openai_chain()
 

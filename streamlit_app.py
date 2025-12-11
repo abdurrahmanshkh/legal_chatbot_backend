@@ -247,7 +247,7 @@ st.caption("<p style='text-align:center; color:#64748b; margin-bottom:1.5rem; fo
 sidebar_state = st.session_state.get("sidebar_state", True)
 with st.sidebar:
     st.markdown("<h2>Configuration</h2>", unsafe_allow_html=True)
-    model_choice = st.selectbox("Choose AI Model", ["Gemini", "OpenAI"])
+    model_choice = st.selectbox("Choose AI Model", ["OpenAI", "Gemini"])
     st.markdown("---")
     st.markdown("""
     <div style='margin-top:1.5rem;'>

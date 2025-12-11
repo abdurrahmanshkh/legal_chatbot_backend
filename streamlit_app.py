@@ -10,6 +10,7 @@ import google.generativeai as genai
 from langchain_openai import ChatOpenAI
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
+from tenacity import retry, stop_after_attempt, wait_exponential  # Optional for Gemini
 
 
 # Load environment variables
@@ -296,7 +297,7 @@ prompt = PromptTemplate(
 genai_key = os.getenv("GEMINI_API_KEY")
 if genai_key:
     genai.configure(api_key=genai_key)
-    gemini_model = genai.GenerativeModel("gemini-2.0-flash")
+    gemini_model = genai.GenerativeModel("gemini-1.5-flash")
 else:
     gemini_model = None
 
@@ -325,9 +326,12 @@ openai_chain = init_openai_chain()
 if "history" not in st.session_state:
     st.session_state.history = []
 
+# Optional: Add retry function (after init_openai_chain, ~110)
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
+def generate_with_retry(model, content):
+    return model.generate_content(content)
+
 # Helper functions
-
-
 def get_response(user_query):
     if model_choice == "Gemini":
         if not gemini_model:
@@ -335,12 +339,15 @@ def get_response(user_query):
         docs = retriever.invoke(user_query)
         context = "\n".join([d.page_content for d in docs])
         formatted = prompt.format(context=context, input=user_query)
-        resp = gemini_model.generate_content(formatted)
+        try:
+            resp = generate_with_retry(gemini_model, formatted)  # Uses retry if defined
+        except Exception as e:
+            return f"Error generating response: {str(e)}. Check quotas or try OpenAI."
         return resp.text or "I do not have enough information to answer that."
     else:
         if not openai_chain:
             return "Error: OPENAI_API_KEY not set."
-        result = openai_chain.invoke({"input": user_query})
+        result = openai_chain.invoke(user_query)  # Changed: pass string, not dict
         return result or "I do not have enough information to answer that."
 
 

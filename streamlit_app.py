@@ -280,7 +280,7 @@ retriever = init_retriever()
 # Prompt
 prompt_template = """
 You are a legal assistant chatbot specialized in Indian law.
-Use the following context to answer the question. If the context does not provide sufficient information, reply \"I do not have enough information to answer that.\".
+Use the following context to answer the question. If the context does not provide sufficient information, use your own knowledge to answer the question like a professional legal assistant.
 
 Context:
 {context}
@@ -297,7 +297,7 @@ prompt = PromptTemplate(
 genai_key = os.getenv("GEMINI_API_KEY")
 if genai_key:
     genai.configure(api_key=genai_key)
-    gemini_model = genai.GenerativeModel("gemini-1.5-flash")
+    gemini_model = genai.GenerativeModel("gemini-2.5-flash")
 else:
     gemini_model = None
 
